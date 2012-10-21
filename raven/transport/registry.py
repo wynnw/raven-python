@@ -64,6 +64,5 @@ default_transports = [
     TwistedHTTPTransport,
     TornadoHTTPTransport,
     UDPTransport,
-    UnixDomainSocketTransport,
     EventletHTTPTransport,
 ]

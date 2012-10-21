@@ -10,10 +10,11 @@ import logging
 import sys
 import urllib2
 
+
 try:
     # Google App Engine blacklists parts of the socket module, this will prevent
     # it from blowing up.
-    from socket import socket, AF_INET,AF_UNIX, SOCK_DGRAM, error as socket_error
+    from socket import socket, AF_INET, SOCK_DGRAM, error as socket_error
     has_socket = True
 except:
     has_socket = False
@@ -134,52 +135,6 @@ class UDPTransport(Transport):
         server = '%s://%s%s/api/store/' % (url.scheme, netloc, path)
         scope.update({
             'SENTRY_SERVERS': [server],
-            'SENTRY_PROJECT': project,
-            'SENTRY_PUBLIC_KEY': url.username,
-            'SENTRY_SECRET_KEY': url.password,
-        })
-        return scope
-
-
-class UnixDomainSocketTransport(Transport):
-    """transport for writing over a local unix domain socket
-      url scheme is: unix://<pubkey>:<privkey>@<projkey>/<domain socket path>
-    """
-    scheme = ['unix']
-
-    def __init__(self, parsed_url):
-        if not has_socket:
-            raise ImportError('UnixDomainSocketTransport requires the socket module')
-        self.check_scheme(parsed_url)
-
-        self.socket = None
-        try:
-            self.socket = socket(AF_UNIX, SOCK_DGRAM)
-            self.socket.setblocking(False)
-            self.socket.connect(parsed_url.path)
-        except socket_error:
-            pass  # is this right?
-
-    def __del__(self):
-        if self.socket is not None:
-            self.socket.close()
-
-    def send(self, data, headers):
-        auth_header = headers.get('X-Sentry-Auth')
-        if auth_header is None:
-            # silently ignore attempts to send messages without an auth header
-            return
-
-        self.socket.sendall(auth_header + '\n\n' + data)
-
-    def compute_scope(self, url, scope):
-        project = url.netloc
-
-        if not all([project, url.username, url.password]):
-            raise ValueError('Invalid Sentry DSN: %r' % url.geturl())
-
-        scope.update({
-            'SENTRY_SERVERS': [url],
             'SENTRY_PROJECT': project,
             'SENTRY_PUBLIC_KEY': url.username,
             'SENTRY_SECRET_KEY': url.password,
