@@ -37,7 +37,7 @@ def main():
                       type="string", nargs=1, dest="data")
     (opts, args) = parser.parse_args()
 
-    dsn = ' '.join(args[1:]) or os.environ.get('SENTRY_DSN')
+    dsn = ' '.join(args[0:]) or os.environ.get('SENTRY_DSN')
     if not dsn:
         print "Error: No configuration detected!"
         print "You must either pass a DSN to the command, or set the SENTRY_DSN environment variable."
